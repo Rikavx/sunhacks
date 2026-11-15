@@ -7,6 +7,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { router } from "expo-router";
+import { Colors } from "../constants/colors";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -58,44 +59,60 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
+    backgroundColor: Colors.background,
+  },
+
+  container: {
+    flexGrow: 1,
     justifyContent: "center",
-    padding: 30,
-    backgroundColor: "#ffffff",
+    paddingHorizontal: 30,
+    paddingVertical: 40,
+    backgroundColor: Colors.background,
   },
 
   title: {
     fontSize: 42,
     fontWeight: "bold",
     textAlign: "center",
+    color: Colors.primary,
     marginBottom: 10,
   },
 
   subtitle: {
-    fontSize: 20,
+    fontSize: 18,
+    color: Colors.textMuted,
     textAlign: "center",
-    marginBottom: 35,
+    marginBottom: 30,
   },
 
   input: {
     borderWidth: 1,
-    borderColor: "#cccccc",
+    borderColor: Colors.border,
     borderRadius: 10,
-    padding: 15,
+    paddingHorizontal: 15,
+    paddingVertical: 14,
     fontSize: 16,
-    marginBottom: 15,
+    color: Colors.text,
+    backgroundColor: Colors.white,
+    marginBottom: 18,
   },
 
   button: {
-    backgroundColor: "#222222",
-    padding: 15,
+    backgroundColor: Colors.primary,
+    paddingVertical: 15,
     borderRadius: 10,
+    alignItems: "center",
     marginTop: 5,
   },
 
+  buttonPressed: {
+    backgroundColor: Colors.primaryDark,
+  },
+
   buttonText: {
-    color: "#ffffff",
+    color: Colors.white,
     textAlign: "center",
     fontSize: 16,
     fontWeight: "600",
@@ -108,6 +125,8 @@ const styles = StyleSheet.create({
   },
 
   link: {
+    fontSize: 15,
     fontWeight: "bold",
+    color: Colors.primary,
   },
 });

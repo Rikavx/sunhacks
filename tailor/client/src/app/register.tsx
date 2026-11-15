@@ -5,123 +5,230 @@ import {
   TextInput,
   Pressable,
   StyleSheet,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from "react-native";
 import { router } from "expo-router";
+import { Colors } from "../constants/colors";
 
 export default function RegisterScreen() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState("");
 
-  const handleRegister = () => {
-    if (password !== confirmPassword) {
-      alert("Passwords do not match.");
+  const handleRegister = async () => {
+    // Check for empty fields
+    if (!name || !email || !password || !confirmPassword) {
+      Alert.alert("Missing Information", "Please fill out all fields.");
       return;
     }
 
-    console.log("Name:", name);
-    console.log("Email:", email);
+    // Make sure passwords match
+    if (password !== confirmPassword) {
+      Alert.alert("Password Error", "Passwords do not match.");
+      return;
+    }
 
-    // We'll send this information to Express later.
+    try {
+      const response = await fetch(
+        "http://10.0.2.2:3000/api/auth/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        Alert.alert(
+          "Registration Failed",
+          data.message || "Unable to create account."
+        );
+        return;
+      }
+
+      console.log("User created:", data.user);
+
+      // Go to role selection after account creation
+      router.push("/select-role");
+    } catch (error) {
+      console.error("Registration error:", error);
+
+      Alert.alert(
+        "Connection Error",
+        "Could not connect to the server."
+      );
+    }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
+    <KeyboardAvoidingView
+      style={styles.screen}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={styles.title}>Create Account</Text>
 
-      <Text style={styles.subtitle}>
-        Join Hemline
-      </Text>
+        <Text style={styles.subtitle}>
+          Join Hemline
+        </Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Name"
-        value={name}
-        onChangeText={setName}
-      />
+        {/* Name */}
+        <Text style={styles.label}>Name</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="Enter your name"
+          placeholderTextColor={Colors.textMuted}
+          value={name}
+          onChangeText={setName}
+          autoCapitalize="words"
+        />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
+        {/* Email */}
+        <Text style={styles.label}>Email</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Confirm Password"
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        secureTextEntry
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="Enter your email"
+          placeholderTextColor={Colors.textMuted}
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="email-address"
+        />
 
-      <Pressable style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Create Account</Text>
-      </Pressable>
+        {/* Password */}
+        <Text style={styles.label}>Password</Text>
 
-      <View style={styles.loginContainer}>
-        <Text>Already have an account? </Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Create a password"
+          placeholderTextColor={Colors.textMuted}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
 
-        <Pressable onPress={() => router.back()}>
-          <Text style={styles.link}>Log In</Text>
+        {/* Confirm Password */}
+        <Text style={styles.label}>Confirm Password</Text>
+
+        <TextInput
+          style={styles.input}
+          placeholder="Confirm your password"
+          placeholderTextColor={Colors.textMuted}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+        />
+
+        {/* Create Account */}
+        <Pressable
+          style={({ pressed }) => [
+            styles.button,
+            pressed && styles.buttonPressed,
+          ]}
+          onPress={handleRegister}
+        >
+          <Text style={styles.buttonText}>
+            Create Account
+          </Text>
         </Pressable>
-      </View>
-    </View>
+
+        {/* Login */}
+        <View style={styles.loginContainer}>
+          <Text style={styles.loginText}>
+            Already have an account?{" "}
+          </Text>
+
+          <Pressable onPress={() => router.back()}>
+            <Text style={styles.link}>
+              Log In
+            </Text>
+          </Pressable>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
+    backgroundColor: Colors.background,
+  },
+
+  container: {
+    flexGrow: 1,
     justifyContent: "center",
-    padding: 30,
-    backgroundColor: "#ffffff",
+    paddingHorizontal: 30,
+    paddingVertical: 40,
+    backgroundColor: Colors.background,
   },
 
   title: {
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: "bold",
     textAlign: "center",
+    color: Colors.primary,
     marginBottom: 8,
   },
 
   subtitle: {
     fontSize: 18,
+    color: Colors.textMuted,
     textAlign: "center",
     marginBottom: 30,
   },
 
+  label: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: Colors.text,
+    marginBottom: 7,
+  },
+
   input: {
     borderWidth: 1,
-    borderColor: "#cccccc",
+    borderColor: Colors.border,
     borderRadius: 10,
-    padding: 15,
+    paddingHorizontal: 15,
+    paddingVertical: 14,
     fontSize: 16,
-    marginBottom: 15,
+    color: Colors.text,
+    backgroundColor: Colors.white,
+    marginBottom: 18,
   },
 
   button: {
-    backgroundColor: "#222222",
-    padding: 15,
+    backgroundColor: Colors.primary,
+    paddingVertical: 15,
     borderRadius: 10,
+    alignItems: "center",
     marginTop: 5,
   },
 
+  buttonPressed: {
+    backgroundColor: Colors.primaryDark,
+  },
+
   buttonText: {
-    color: "#ffffff",
-    textAlign: "center",
+    color: Colors.white,
     fontSize: 16,
     fontWeight: "600",
   },
@@ -129,10 +236,17 @@ const styles = StyleSheet.create({
   loginContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 20,
+    marginTop: 22,
+  },
+
+  loginText: {
+    fontSize: 15,
+    color: Colors.text,
   },
 
   link: {
+    fontSize: 15,
     fontWeight: "bold",
+    color: Colors.primary,
   },
 });
